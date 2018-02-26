@@ -1,0 +1,112 @@
+# Data Science Services
+version: "3.0"
+networks:
+  sandbox:
+    driver: bridge
+services:
+  airflow_server: &airflow_base
+    image: docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1 #mesos-airflow #puckel/docker-airflow:1.9.0   docker.sailthru.com/ds/airflow:1.9.0-spark2.2.1
+    networks: ["sandbox"]
+    restart: always
+    hostname: airflow-server
+    container_name: airflow_server
+    depends_on:
+        - postgresql
+        - redis
+    env_file: ./airflow/config-dev.env
+    environment:
+      ENVIRONMENT: "SANDBOX"
+    volumes:
+        - ~/dev/ds-jobs/:/usr/local/ds-jobs/
+        - ./airflow:/usr/local/airflow
+        - ~/dev/ds-jobs/lib/:/usr/local/airflow/lib/
+        - ~/dev/ds-jobs/config/:/usr/local/airflow/config/
+        - ~/dev/ds-jobs/plugins/:/usr/local/airflow/plugins/
+        - ~/dev/ds-jobs/dags/:/usr/local/airflow/dags/
+    ports:
+        - "8080:8080"
+        - "8793:8793"
+        - "5555:5555"
+    entrypoint: ["/usr/local/airflow/script/entrypoint.sh", "webserver"]
+    healthcheck:
+        test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+  airflow_scheduler:
+    <<: *airflow_base
+    hostname: airflow-scheduler
+    container_name: airflow_scheduler
+    entrypoint: ["/usr/local/airflow/script/entrypoint.sh", "scheduler"]
+    #command: scheduler
+    ports:
+      - "8081:8081"
+  airflow_worker:
+    <<: *airflow_base
+    hostname: airflow-worker
+    container_name: airflow_worker
+    entrypoint: ["/usr/local/airflow/script/entrypoint.sh", "worker"]
+    #command: worker
+    ports:
+      - "8082:8082"
+      # - "8793:8793"
+  mesos-master:
+    image: mesosphere/mesos-master:1.0.1-2.0.93.ubuntu1404
+    container_name: mesos-master
+    hostname: mesos-master
+    networks: ["sandbox"]
+    environment:
+      MESOS_ZK: zk://zk:2181/mesos
+      MESOS_QUORUM: 1
+      MESOS_CLUSTER: docker-compose
+      MESOS_REGISTRY: replicated_log # default is in_memory for some reason
+      MESOS_HOSTNAME: mesos-master
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - zookeeper
+    ports:
+      - "5050:5050"
+  mesos-slave:
+    image: mesosphere/mesos-slave:1.0.1-2.0.93.ubuntu1404 #mesos-slave:1.0.1-2.0.93-hadoop #
+    container_name: mesos-slave
+    privileged: true
+    hostname: mesos-slave
+    networks: ["sandbox"]
+    environment:
+      MESOS_MASTER: zk://zk:2181/mesos
+      MESOS_CONTAINERIZERS: docker
+      MESOS_PORT: 5051
+      MESOS_RESOURCES: ports(*):[11000-11999]
+      MESOS_HOSTNAME: localhost
+      MESOS_WORK_DIR: /tmp/mesos
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    working_dir: /usr/local/
+    volumes:
+      - /tmp/mesos:/tmp/mesos
+      - ~/dev/ds-jobs/:/usr/local/ds-jobs/
+      - ~/dev/devtools/containers/airflow:/usr/local/airflow
+      - ~/docker.tar.gz:/etc/docker.tar.gz
+      - /usr/local/bin/docker:/usr/bin/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - mesos-master
+      - zookeeper
+    entrypoint: mesos-slave
+    ports:
+      - "5051:5051"
+  spark-mesos:
+    networks: ["sandbox"]
+    hostname: spark-mesos
+    image: docker.sailthru.com/nimbus/spark:beta-2.1.1-2.2.0-2-hadoop-2.7
+    container_name: spark-mesos
+    hostname: spark-mesos
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      SPARK_MESOS_DISPATCHER_HOST: spark-mesos
+    entrypoint: ./bin/spark-class org.apache.spark.deploy.mesos.MesosClusterDispatcher --master mesos://zk://zookeeper:2181/mesos --zk zk:2181 --name spark --port 7077 --host spark-mesos --webui-port 8084
+    ports:
+      - "8084:8084"
+      - "7077:7077"
