@@ -1,3 +1,7 @@
 **/logs
-**/.*
-*.*
+*.db
+*.pid
+**/.cache
+**/__pycache__
+.*
+!/.gitignore

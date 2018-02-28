@@ -2,6 +2,10 @@
 Mesos and Spark are powerful technologies for processing large workloads on a distributed cluster. Airflow is a framework to write, schedule, and monitor jobs. In conjunction, these three technologies provide a user friendly and powerful way to manage process large data sets. This tutorial will walk through how to schedule Spark jobs with Airflow, distributing the Spark tasks across a Mesos cluster. We'll set this all up locally using `docker-compose`.
 
 ## Setup
+- Add the zookeeper alias /etc/hosts. This is necessary because mesos will execute `docker run` within the docker-compose `sandbox` network and therefore cannot resolve the container's host name.
+```
+127.0.0.1 zookeeper zk
+```
 - Source the bash tools
 ```
 source extras.sh
