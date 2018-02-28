@@ -3,6 +3,7 @@ version: "3.0"
 networks:
   sandbox:
     driver: bridge
+volumes: { pg_data: {}, redis: {} }
 services:
   airflow_server: &airflow_base
     image: docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1 #mesos-airflow #puckel/docker-airflow:1.9.0   docker.sailthru.com/ds/airflow:1.9.0-spark2.2.1
@@ -17,12 +18,7 @@ services:
     environment:
       ENVIRONMENT: "SANDBOX"
     volumes:
-        - ~/dev/ds-jobs/:/usr/local/ds-jobs/
-        - ./airflow:/usr/local/airflow
-        - ~/dev/ds-jobs/lib/:/usr/local/airflow/lib/
-        - ~/dev/ds-jobs/config/:/usr/local/airflow/config/
-        - ~/dev/ds-jobs/plugins/:/usr/local/airflow/plugins/
-        - ~/dev/ds-jobs/dags/:/usr/local/airflow/dags/
+        - ./:/usr/local/airflow
     ports:
         - "8080:8080"
         - "8793:8793"
@@ -85,8 +81,8 @@ services:
     working_dir: /usr/local/
     volumes:
       - /tmp/mesos:/tmp/mesos
-      - ~/dev/ds-jobs/:/usr/local/ds-jobs/
-      - ~/dev/devtools/containers/airflow:/usr/local/airflow
+      - ./python/:/python/
+      - ./airflow/:/usr/local/airflow
       - ~/docker.tar.gz:/etc/docker.tar.gz
       - /usr/local/bin/docker:/usr/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
@@ -110,3 +106,19 @@ services:
     ports:
       - "8084:8084"
       - "7077:7077"
+  redis:
+    container_name: redis
+    hostname: redis
+    networks: [ sandbox ]
+    image: redis:2.8.9
+    volumes: [ "redis:/data" ]
+    ports: [ "6379:6379" ]
+  postgresql:
+    container_name: postgresql
+    hostname: postgresql
+    networks: [ sandbox ]
+    image: postgres:9.5
+    command: sh -c "service postgresql-9.5 start ; tail -f /var/lib/pgsql/9.5/pgstartup.log" #todo jmarnell: dockerize this
+    volumes:
+      - pg_data:/var/lib/pgsql/9.5/data
+    ports: [ "5432:5432" ]
