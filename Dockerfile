@@ -15,6 +15,8 @@ ENV JAVA_ALPINE_VERSION 8.151.12-r0
 # ----- #
 
 ARG INSTALL_DIR=/usr/local
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 ENV SPARK_HOME ${INSTALL_DIR}/spark
 ENV SPARK_VERSION 2.2.1
 ENV HADOOP_VERSION 2.7
@@ -67,7 +69,8 @@ RUN apk --update add postgresql-dev \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
-COPY spark_submit_hook.py /src/apache-airflow/airflow/contrib/hooks/spark_submit_hook.py
+ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
 EXPOSE 8080 5555 8793
 

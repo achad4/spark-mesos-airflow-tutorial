@@ -3,7 +3,13 @@ Mesos and Spark are powerful technologies for processing large workloads on a di
 
 ## Setup
 - Source the bash tools
+```
+source extras.sh
+```
 - Build the image (this will take ~15 mins as it installs some heavy duty packages, but you only need to do it once!)
+```
+buildImage
+```
 
 ## Spark Mesos Cluster in compose
 - The cluster consists of a single mesos master and slave communicating via zookeeper
@@ -17,7 +23,7 @@ Mesos and Spark are powerful technologies for processing large workloads on a di
 - `docker.tar.gz` contains your credentials and allows mesos to pull from a private registry. The second two lines just mount the docker executable 
 ## Start Mesos
 - doco up mesos-master spark-mesos && docomesos
-	- The `docomesos` alias is a workaround. Don't ask me why but the `mesos-slave` process only stays alive when run in the foreground. This therefore does `docker run -it --entrypoint=bash mesos -c "mesos-slave"` ....strange
+	- The `docomesos` alias is a workaround: don't ask me why but the `mesos-slave` process only stays alive when run in the foreground in docker-compose for mac. `docker run -it --entrypoint=bash mesos -c "mesos-slave"` accomplishes this.
 - Submit a pyspark job to the cluster
 	- **WARNING**: a common error here is a nullpointer in spark webserver at  `org.apache.spark.scheduler.cluster.mesos.MesosClusterScheduler.revive` which manifests itself as a Json parse exception on the client side. This is a result of the Spark mesos scheduler not cleanly unregistering from the mesos master and can be solved by bringing down mesos and removing the working directory: `docker rm -f spark-mesos mesos-master mesos-slave && rm -rf /tmp/mesos`
 - Notice in the `docker-compose` file the line `/tmp/mesos:/tmp/mesos`. When the mesos slave launches a task it will create and pull files into a "sandbox" directory, which will in turn be mounted into the container that it executes. We therefore need to mount the hosts `/tmp/mesos` directory into the mesos slave container so that when it executes `docker run ...` it will be able to mount the sandbox directory into the container (i.e. so that `docker.sailthru.com/nimbus/spark:beta-2.1.1-2.2.0-2-hadoop-2.7_3` will have access to `python/spark_test.py`)
