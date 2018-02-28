@@ -6,7 +6,7 @@ networks:
 volumes: { pg_data: {}, redis: {} }
 services:
   airflow_server: &airflow_base
-    image: docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1 #mesos-airflow #puckel/docker-airflow:1.9.0   docker.sailthru.com/ds/airflow:1.9.0-spark2.2.1
+    image: airflow:1.10.0-spark2.2.1-tutorial #mesos-airflow #puckel/docker-airflow:1.9.0   docker.sailthru.com/ds/airflow:1.9.0-spark2.2.1
     networks: ["sandbox"]
     restart: always
     hostname: airflow-server
@@ -95,7 +95,7 @@ services:
   spark-mesos:
     networks: ["sandbox"]
     hostname: spark-mesos
-    image: docker.sailthru.com/nimbus/spark:beta-2.1.1-2.2.0-2-hadoop-2.7
+    image: airflow:1.10.0-spark2.2.1-tutorial
     container_name: spark-mesos
     hostname: spark-mesos
     environment:
