@@ -1,12 +1,12 @@
 version: "3.0"
 networks:
-  sandbox:
+  airflow:
     driver: bridge
 volumes: { pg_data: {}, redis: {} }
 services:
   airflow_server: &airflow_base
     image: tutorial
-    networks: ["sandbox"]
+    networks: ["airflow"]
     restart: always
     hostname: airflow-server
     container_name: airflow_server
@@ -15,7 +15,7 @@ services:
         - redis
     env_file: ./config-dev.env
     environment:
-      ENVIRONMENT: "SANDBOX"
+      ENVIRONMENT: "airflow"
     volumes:
         - ./:/usr/local/airflow
     ports:
@@ -49,7 +49,7 @@ services:
     image: mesosphere/mesos-master:1.0.1-2.0.93.ubuntu1404
     container_name: mesos-master
     hostname: mesos-master
-    networks: ["sandbox"]
+    networks: ["airflow"]
     environment:
       MESOS_ZK: zk://zk:2181/mesos
       MESOS_QUORUM: 1
@@ -67,7 +67,7 @@ services:
     container_name: mesos-slave
     privileged: true
     hostname: mesos-slave
-    networks: ["sandbox"]
+    networks: ["airflow"]
     environment:
       MESOS_MASTER: zk://zk:2181/mesos
       MESOS_CONTAINERIZERS: docker
@@ -92,7 +92,7 @@ services:
     ports:
       - "5051:5051"
   spark-mesos:
-    networks: ["sandbox"]
+    networks: ["airflow"]
     hostname: spark-mesos
     image: tutorial
     container_name: spark-mesos
@@ -101,7 +101,9 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       SPARK_MESOS_DISPATCHER_HOST: spark-mesos
-    entrypoint: ./bin/spark-class org.apache.spark.deploy.mesos.MesosClusterDispatcher --master mesos://zk://zookeeper:2181/mesos --zk zk:2181 --name spark --port 7077 --host spark-mesos --webui-port 8084
+    depends_on:
+      - zookeeper
+    entrypoint: /usr/local/spark/bin/spark-class org.apache.spark.deploy.mesos.MesosClusterDispatcher --master mesos://zk://zookeeper:2181/mesos --zk zk:2181 --name spark --port 7077 --host spark-mesos --webui-port 8084
     ports:
       - "8084:8084"
       - "7077:7077"
@@ -110,20 +112,20 @@ services:
     hostname: zookeeper
     image: wurstmeister/zookeeper
     networks:
-      sandbox:
+      airflow:
         aliases: [ "zk" ]
     ports: [ "2181:2181" ]
   redis:
     container_name: redis
     hostname: redis
-    networks: [ sandbox ]
+    networks: [ "airflow" ]
     image: redis:2.8.9
     volumes: [ "redis:/data" ]
     ports: [ "6379:6379" ]
   postgresql:
     container_name: postgresql
     hostname: postgresql
-    networks: [ sandbox ]
+    networks: [ "airflow" ]
     image: postgres:9.5
     volumes:
       - pg_data:/var/lib/postgresql/data

@@ -13,7 +13,7 @@ Mesos and Spark are powerful technologies for processing large workloads on a di
 ```
 source extras.sh
 ```
-- Build the image (this will take ~15 mins as it installs some heavy duty packages, but you only need to do it once!)
+- Build the image (this will take a few mins as it installs some heavy duty packages, but you only need to do it once!)
 ```
 buildImage
 ```
