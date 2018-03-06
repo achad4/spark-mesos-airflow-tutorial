@@ -5,7 +5,7 @@ networks:
 volumes: { pg_data: {}, redis: {} }
 services:
   airflow_server: &airflow_base
-    image: tutorial
+    image: tutorial #docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1
     networks: ["airflow"]
     restart: always
     hostname: airflow-server
@@ -13,9 +13,7 @@ services:
     depends_on:
         - postgresql
         - redis
-    env_file: ./config-dev.env
-    environment:
-      ENVIRONMENT: "airflow"
+    # env_file: ./config-dev.env
     volumes:
         - ./:/usr/local/airflow
     ports:
@@ -33,18 +31,24 @@ services:
     hostname: airflow-scheduler
     container_name: airflow_scheduler
     entrypoint: ["/usr/local/airflow/script/entrypoint.sh", "scheduler"]
-    #command: scheduler
+    depends_on:
+        - airflow_server
     ports:
       - "8081:8081"
   airflow_worker:
     <<: *airflow_base
-    hostname: airflow-worker
     container_name: airflow_worker
+    hostname: airflow-worker
     entrypoint: ["/usr/local/airflow/script/entrypoint.sh", "worker"]
-    #command: worker
+    depends_on:
+        - airflow_server
+    # env_file: ./config-dev.env
+    environment:
+      C_FORCE_ROOT: "True"
     ports:
-      - "8082:8082"
-      # - "8793:8793"
+        - "8082:8082"
+
+
   mesos-master:
     image: mesosphere/mesos-master:1.0.1-2.0.93.ubuntu1404
     container_name: mesos-master

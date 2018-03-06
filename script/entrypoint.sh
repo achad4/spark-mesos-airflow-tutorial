@@ -13,10 +13,10 @@ if [ "$1" == "webserver" ]; then
     # python /usr/local/airflow/insert_conn.py
     airflow webserver
 elif [ "$1" == "scheduler" ]; then
-    sleep 10
+    # sleep 10
     airflow scheduler
 elif [ "$1" == "worker" ]; then
-    sleep 10
+    # sleep 10
     airflow worker
 else
     echo "available options: webserver, scheduler or worker"

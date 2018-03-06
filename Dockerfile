@@ -51,8 +51,7 @@ RUN curl -fSL "$SPARK_TGZ_URL" -o spark.tgz
 RUN tar -xzf spark.tgz
 RUN mv spark-* $SPARK_HOME && rm spark.tgz
 
-RUN cat requirements.txt | xargs pip install --no-cache-dir \
-      && rm /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
 
 ARG AIRFLOW_VERSION=1.10.0
 ARG AIRFLOW_HOME=/usr/local/airflow
@@ -63,14 +62,14 @@ ENV PYTHONPATH ${AIRFLOW_HOME}
 
 COPY . ${AIRFLOW_HOME}/
 
-# RUN adduser -s /bin/ash -h ${AIRFLOW_HOME} -S airflow \
-#     && chown -R airflow: ${AIRFLOW_HOME}
+RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && chown -R airflow: ${AIRFLOW_HOME}
 
 ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
 EXPOSE 8080 5555 8793
 
-# USER airflow
+USER airflow
 
 WORKDIR ${AIRFLOW_HOME}
