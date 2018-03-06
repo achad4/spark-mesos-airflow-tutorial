@@ -5,7 +5,7 @@ networks:
 volumes: { pg_data: {}, redis: {} }
 services:
   airflow_server: &airflow_base
-    image: tutorial #docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1
+    image: airflow #docker.sailthru.com/ds/airflow:1.10.0-spark2.2.1
     networks: ["airflow"]
     restart: always
     hostname: airflow-server

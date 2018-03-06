@@ -29,7 +29,7 @@ spark_config = {
 }
 
 task = SparkSubmitOperator(
-    application='/python/concat_kafka_logs.py',
+    application='/python/spark_hello_world.py',
     task_id='spark_hello_world_task',
     conf=spark_config,
     conn_id='spark_mesos',
