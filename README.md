@@ -38,10 +38,6 @@ source extras.sh
 - The `spark-mesos` container runs the `MesosClusterDispatcher` class, connecting to the mesos cluster via zookeeper. 
 	- It will start the `CoarseGrainedSchedulerBackend` with which Spark executors will register, more on that later.
 - After you start up the `spark-mesos` container, you should be able to see a framework registered under the name "spark" in your mesos cluser (`localhost:5050`). This is the framework that will launch your spark tasks.
-- Before submitting the spark task, we need to slightly modify the spark image to work with out local cluster, namely remove the mesos node contraints and add our AWS credentials from our local environment.
-```
-cd ~/dev/devtools/containers/mesos && ./build_dev_image.sh
-```
 - Submit a Spark task:
 ```
 dexec server /usr/local/spark/bin/spark-submit --master mesos://spark-mesos:7077 --conf spark.mesos.executor.docker.image=spark-mesos-dev --conf spark.mesos.executor.home=/opt/spark --name spark_job_1 --deploy-mode cluster /usr/local/ds-jobs/lib/etl/spark_hello_world.py
