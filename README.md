@@ -44,7 +44,7 @@ cd ~/dev/devtools/containers/mesos && ./build_dev_image.sh
 ```
 - Submit a Spark task:
 ```
-dexec airflow_server /usr/local/spark/bin/spark-submit --master mesos://spark-mesos:7077 --conf spark.mesos.executor.docker.image=spark-mesos-dev --conf spark.mesos.executor.home=/opt/spark --name spark_job_1 --deploy-mode cluster /usr/local/ds-jobs/lib/etl/spark_hello_world.py
+dexec server /usr/local/spark/bin/spark-submit --master mesos://spark-mesos:7077 --conf spark.mesos.executor.docker.image=spark-mesos-dev --conf spark.mesos.executor.home=/opt/spark --name spark_job_1 --deploy-mode cluster /usr/local/ds-jobs/lib/etl/spark_hello_world.py
 Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
 18/02/26 17:45:59 INFO RestSubmissionClient: Submitting a request to launch an application in mesos://spark-mesos:7077.
 18/02/26 17:46:01 INFO RestSubmissionClient: Submission successfully created as driver-20180226174600-0001. Polling submission state...
@@ -85,7 +85,7 @@ Hello World
 
 ## Start Airflow
 Now that we've been able to successfully submit a Spark python job to our Mesos cluster, let's use the `SparkSubmitOperator` to run the same pyspark job with Airflow. 
-- `doco up airflow_server airflow_scheduler airflow_worker`
+- `doco up server scheduler worker`
 - Create the spark mesos connection in the UI `http://localhost:8080/admin/connection/`
 ```
 conn_id: spark_mesos
