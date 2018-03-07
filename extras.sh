@@ -9,7 +9,7 @@ function buildImages() {
     docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
     -t airflow -f airflow.Dockerfile .
     docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
-    -t run-spark -f airflow.Dockerfile .
+    -t run-spark -f spark.Dockerfile .
 }
 
 function doco() { ( docker-compose -f "$TUTORIAL_HOME/docker-compose.yml" "$@" ); }

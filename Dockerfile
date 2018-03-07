@@ -45,14 +45,11 @@ RUN chmod +x /usr/local/bin/docker-java-home
 RUN set -x
 RUN echo "$(/usr/local/bin/docker-java-home)"
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
-# RUN [ "$JAVA_HOME" = "$(/usr/local/bin/docker-java-home)" ] 
 RUN cd ${INSTALL_DIR}
 RUN curl -fSL "$SPARK_TGZ_URL" -o spark.tgz
 RUN tar -xzf spark.tgz
 RUN mv spark-* $SPARK_HOME && rm spark.tgz
 
 RUN pip install --no-cache-dir -r /requirements.txt
-
-ENV SPARK_LOCAL_IP mesos-slave
 
 WORKDIR ${SPARK_HOME}
