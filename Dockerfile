@@ -53,4 +53,6 @@ RUN mv spark-* $SPARK_HOME && rm spark.tgz
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
+ENV SPARK_LOCAL_IP mesos-slave
+
 WORKDIR ${SPARK_HOME}

@@ -1,7 +1,7 @@
-dexec airflow_server /usr/local/spark/bin/spark-submit \
+docker exec -it server bash -c '/usr/local/spark/bin/spark-submit \
 --master mesos://spark-mesos:7077 \
---conf spark.mesos.executor.docker.image=spark-mesos-dev \
---conf spark.mesos.executor.home=/opt/spark \
+--conf spark.mesos.executor.docker.image=tutorial \
+--conf spark.mesos.executor.home=/usr/local/spark/ \
 --name spark_job_3  \
 --deploy-mode cluster \
-/python/spark_hello_world.py
+/python/spark_hello_world.py'
