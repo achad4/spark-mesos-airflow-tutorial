@@ -22,7 +22,7 @@ driver_memory = '1G'
 job_cores = 1
 
 spark_config = {
-    'spark.mesos.executor.docker.image': 'tutorial',
+    'spark.mesos.executor.docker.image': 'run-spark',
     'spark.mesos.executor.home': '/opt/spark',
     'spark.mesos.uris': 'file:///etc/docker.tar.gz',
     'spark.cores.max': job_cores
